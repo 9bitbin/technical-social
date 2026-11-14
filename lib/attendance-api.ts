@@ -18,6 +18,17 @@ export type AttendanceResult = {
   visits: { date: string; attendees: Attendee[] }[];
 };
 
+export class AttendanceApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly registrationRequired = false,
+  ) {
+    super(message);
+    this.name = "AttendanceApiError";
+  }
+}
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 export async function postAttendance<T>(path: string, body: unknown): Promise<T> {
@@ -27,7 +38,16 @@ export async function postAttendance<T>(path: string, body: unknown): Promise<T>
     body: JSON.stringify(body),
   });
 
-  const result = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(result.error ?? `Request failed (${response.status}).`);
+  const result = (await response.json()) as T & {
+    error?: string;
+    registrationRequired?: boolean;
+  };
+  if (!response.ok) {
+    throw new AttendanceApiError(
+      result.error ?? `Request failed (${response.status}).`,
+      response.status,
+      result.registrationRequired,
+    );
+  }
   return result;
 }
