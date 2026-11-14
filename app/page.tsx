@@ -1,69 +1,120 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FiArrowRight, FiMail, FiUsers } from "react-icons/fi";
+import { postAttendance, type AttendanceResult } from "@/lib/attendance-api";
+
+export default function HomePage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<AttendanceResult | null>(null);
+
+  async function handleContinue(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const attendance = await postAttendance<AttendanceResult>("/api/attendance/lookup", { email });
+      setResult(attendance);
+    } catch (requestError) {
+      if (requestError instanceof Error && requestError.message === "That email is not registered.") {
+        router.push(`/register?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+      } else if (requestError instanceof Error && requestError.message.includes("fetch")) {
+        setError("there seems to be an error");
+      } else {
+        setError(requestError instanceof Error ? requestError.message : "Could not check in.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main style={styles.page}>
+      <section style={styles.card}>
+        <div style={styles.logo}><FiUsers size={26} /></div>
+        <h1 style={styles.title}>{result ? `Welcome, ${result.profile.name.split(" ")[0]}!` : "Welcome!"}</h1>
+        <p style={styles.intro}>
+          {result
+            ? "You’re checked in. See who else is attending on the days you’ve visited."
+            : "Connect with people attending the event. Enter your email to get started."}
+        </p>
+
+        {!result ? (
+          <form onSubmit={handleContinue}>
+            <div style={styles.inputWrap}>
+              <FiMail size={20} style={styles.mailIcon} />
+              <input
+                aria-label="Email address"
+                type="email"
+                autoComplete="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                required
+                style={{ ...styles.input, borderColor: focused ? "#C65A3A" : "#E8E5E7" }}
+              />
+            </div>
+            {error && <p role="alert" style={styles.error}>{error}</p>}
+            <button type="submit" disabled={loading} style={styles.button}>
+              {loading ? "Checking in…" : "Continue"}<FiArrowRight size={18} />
+            </button>
+          </form>
+        ) : (
+          <div style={styles.visits}>
+            {result.visits.map(({ date, attendees }) => (
+              <section key={date} style={styles.visit}>
+                <h2 style={styles.date}>{new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
+                  weekday: "long", month: "long", day: "numeric", year: "numeric",
+                })}</h2>
+                <p style={styles.attendeeCount}>{attendees.length} {attendees.length === 1 ? "person" : "people"} attending</p>
+                <ul style={styles.attendeeList}>
+                  {attendees.map((attendee) => (
+                    <li key={attendee.id} style={styles.attendee}>
+                      <span style={styles.attendeeName}>{attendee.name}</span>
+                      {attendee.profession && <span style={styles.profession}>{attendee.profession}</span>}
+                      <a href={attendee.linkedin} target="_blank" rel="noreferrer" style={styles.link}>LinkedIn</a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+            <button type="button" onClick={() => setResult(null)} style={styles.secondaryButton}>Use another email</button>
+          </div>
+        )}
+
+        {!result && <p style={styles.footer}>Your email helps us find your attendee profile.</p>}
+      </section>
+    </main>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, boxSizing: "border-box", fontFamily: "var(--font-geist-sans), sans-serif" },
+  card: { width: "100%", maxWidth: 480, background: "#fff", padding: "40px 32px", borderRadius: 20, border: "1px solid #F0EAE7", boxShadow: "0 12px 40px rgba(80,45,30,.06)", boxSizing: "border-box" },
+  logo: { width: 52, height: 52, borderRadius: 15, background: "#FBEDE7", color: "#C65A3A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" },
+  title: { fontSize: 30, fontWeight: 700, color: "#191B26", margin: "0 0 12px", letterSpacing: -1, textAlign: "center" },
+  intro: { fontSize: 15, lineHeight: 1.6, color: "#686875", margin: "0 0 28px", textAlign: "center" },
+  inputWrap: { position: "relative", marginBottom: 16 },
+  mailIcon: { position: "absolute", left: 18, top: "50%", transform: "translateY(-50%)", color: "#92919A" },
+  input: { width: "100%", height: 56, padding: "0 18px 0 52px", background: "#fff", border: "1.5px solid #E8E5E7", borderRadius: 12, fontSize: 15, color: "#191B26", outline: "none", boxSizing: "border-box" },
+  button: { width: "100%", height: 54, border: 0, borderRadius: 12, background: "#C65A3A", color: "#fff", fontSize: 16, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 },
+  error: { color: "#A33E2D", fontSize: 14, margin: "0 0 14px", textAlign: "left" },
+  footer: { margin: "24px 0 0", fontSize: 12, color: "#92919A", textAlign: "center" },
+  visits: { textAlign: "left" },
+  visit: { borderTop: "1px solid #F0EAE7", paddingTop: 20, marginTop: 20 },
+  date: { color: "#191B26", fontSize: 17, margin: "0 0 5px" },
+  attendeeCount: { fontSize: 13, color: "#686875", margin: "0 0 12px" },
+  attendeeList: { display: "grid", gap: 10, listStyle: "none", padding: 0, margin: 0 },
+  attendee: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", padding: "12px 14px", background: "#FFFCFA", borderRadius: 10 },
+  attendeeName: { color: "#191B26", fontWeight: 600 },
+  profession: { color: "#686875", fontSize: 13 },
+  link: { color: "#C65A3A", fontSize: 13, marginLeft: "auto" },
+  secondaryButton: { border: "1px solid #E8E5E7", background: "white", color: "#686875", borderRadius: 10, padding: "10px 14px", marginTop: 22, cursor: "pointer" },
+};
