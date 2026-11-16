@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { type CSSProperties, type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiArrowRight, FiMail, FiUsers } from "react-icons/fi";
 import { AttendanceApiError, postAttendance, type AttendanceResult } from "@/lib/attendance-api";
