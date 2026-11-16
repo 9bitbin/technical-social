@@ -1,5 +1,5 @@
 /*
- * Tech Social: backend server (API)
+ * Technically Social: backend server (API)
  * Written by Himal Shrestha
  *
  * This is the "kitchen" of the app. The pages never talk to the database
@@ -13,6 +13,7 @@ import { timingSafeEqual } from "node:crypto";
 import cors from "cors";
 import express from "express";
 import { supabase } from "./supabase.js";
+import { defaultTheme, isThemeId } from "../lib/themes.js";
 
 // ==================================================================
 // SETUP
@@ -218,6 +219,15 @@ async function attendanceSummary(profile: Profile) {
 // Quick "are you alive?" check. Visit http://localhost:4000/health to test.
 app.get("/health", (_request, response) => response.json({ status: "ok" }));
 
+// THEME: which look today's event uses. Every page asks this when it opens.
+// If the organizer hasn't picked one (or the themes table isn't set up yet),
+// it falls back to the default instead of breaking the site.
+app.get("/api/theme", async (_request, response) => {
+  const today = eventDate();
+  const { data } = await supabase.from("event_themes").select("theme").eq("date", today).maybeSingle();
+  return response.json({ date: today, theme: isThemeId(data?.theme) ? data.theme : defaultTheme });
+});
+
 // CHECK IN: someone typed their email on the home page.
 // Found them?  -> check them in for today and send back today's list.
 // Not found?   -> tell the page to send them to the sign-up form.
@@ -363,8 +373,14 @@ app.post("/api/admin/events", async (request, response) => {
     byDate.get(row.date)!.push({ ...person, checked_in_at: row.created_at });
   }
 
+  // Which theme each event date uses, so the organizer page can show it.
+  // (Empty list if the themes table hasn't been set up yet.)
+  const { data: themeRows } = await supabase.from("event_themes").select("date,theme");
+
   return response.json({
     events: [...byDate].map(([date, attendees]) => ({ date, attendees })),
+    themes: themeRows ?? [],
+    today: eventDate(),
   });
 });
 
@@ -401,6 +417,24 @@ app.post("/api/admin/delete-person", async (request, response) => {
 
   const { error } = await supabase.from("users").delete().eq("id", userId);
   if (error) return response.status(500).json({ error: "Could not delete that person." });
+  return response.json({ ok: true });
+});
+
+// Organizer action 3: pick the theme for an event date (today or a future one).
+// "upsert" = add a row for that date, or update it if one already exists.
+app.post("/api/admin/theme", async (request, response) => {
+  const { password, date, theme } = request.body ?? {};
+  if (!isAdmin(password)) return response.status(401).json({ error: "Wrong organizer password." });
+  if (!isDate(date) || !isThemeId(theme)) return response.status(400).json({ error: "Pick a date and a theme." });
+
+  const { error } = await supabase
+    .from("event_themes")
+    .upsert({ date, theme, updated_at: new Date().toISOString() }, { onConflict: "date" });
+  if (error) {
+    return response.status(500).json({
+      error: "Could not save the theme. Make sure the event_themes database update (1116020000) was run in Supabase.",
+    });
+  }
   return response.json({ ok: true });
 });
 

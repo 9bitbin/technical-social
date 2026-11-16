@@ -1,5 +1,5 @@
 /*
- * Tech Social: messenger between the pages and the server
+ * Technically Social: messenger between the pages and the server
  * Written by Himal Shrestha
  *
  * Every page uses postAttendance() to send requests to the backend, instead of

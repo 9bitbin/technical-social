@@ -1,7 +1,7 @@
 "use client";
 
 /*
- * Tech Social: attendee list page (/listing)
+ * Technically Social: attendee list page (/listing)
  * Written by Himal Shrestha
  *
  * After checking in, attendees land here and see a contact card for everyone
@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiGlobe, FiLinkedin, FiMapPin, FiUsers } from "react-icons/fi";
 import { AttendanceApiError, postAttendance, type Attendee, type AttendanceResult } from "@/lib/attendance-api";
+import ThemeDecor from "@/app/theme-decor";
 
 // ==================================================================
 // CONTACT CARD
@@ -116,6 +117,7 @@ export default function ListingPage() {
   return (
     <main style={styles.page}>
       <section style={styles.card}>
+        <ThemeDecor label="Roster" />
         <div style={styles.logo}><FiUsers size={26} /></div>
         <h1 style={styles.title}>{result ? `Welcome, ${firstName}!` : "People attending"}</h1>
         <p style={styles.intro}>
@@ -149,24 +151,24 @@ export default function ListingPage() {
 // ==================================================================
 const styles: Record<string, React.CSSProperties> = {
   page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, boxSizing: "border-box", fontFamily: "var(--font-geist-sans), sans-serif" },
-  card: { width: "100%", maxWidth: 560, background: "#fff", padding: "40px 32px", borderRadius: 20, border: "1px solid #F0EAE7", boxShadow: "0 12px 40px rgba(80,45,30,.06)", boxSizing: "border-box" },
-  logo: { width: 52, height: 52, borderRadius: 15, background: "#FBEDE7", color: "#C65A3A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" },
-  title: { fontSize: 28, fontWeight: 700, color: "#191B26", margin: "0 0 10px", letterSpacing: -1, textAlign: "center" },
-  intro: { fontSize: 14, lineHeight: 1.6, color: "#686875", margin: "0 0 22px", textAlign: "center" },
-  visit: { borderTop: "1px solid #F0EAE7", paddingTop: 20, marginTop: 20 },
-  date: { color: "#191B26", fontSize: 17, margin: "0 0 5px" },
-  count: { fontSize: 13, color: "#686875", margin: "0 0 12px" },
+  card: { width: "100%", maxWidth: 560, background: "var(--ts-card)", padding: "40px 32px", borderRadius: "var(--ts-radius)", border: "1px solid var(--ts-card-border)", boxShadow: "var(--ts-card-shadow)", boxSizing: "border-box" },
+  logo: { width: 52, height: 52, borderRadius: "var(--ts-radius-sm)", background: "var(--ts-accent-soft)", color: "var(--ts-accent)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" },
+  title: { fontSize: 28, fontWeight: 700, color: "var(--ts-text)", margin: "0 0 10px", letterSpacing: "var(--ts-title-spacing)", fontFamily: "var(--ts-font-display)", textAlign: "center" },
+  intro: { fontSize: 14, lineHeight: 1.6, color: "var(--ts-muted)", margin: "0 0 22px", textAlign: "center" },
+  visit: { borderTop: "1px solid var(--ts-card-border)", paddingTop: 20, marginTop: 20 },
+  date: { color: "var(--ts-text)", fontSize: 17, margin: "0 0 5px" },
+  count: { fontSize: 13, color: "var(--ts-muted)", margin: "0 0 12px" },
   list: { display: "grid", gap: 10, listStyle: "none", padding: 0, margin: 0 },
-  contact: { display: "flex", alignItems: "flex-start", gap: 14, padding: 14, background: "#FFFCFA", border: "1px solid #F5EEEA", borderRadius: 14 },
+  contact: { display: "flex", alignItems: "flex-start", gap: 14, padding: 14, background: "var(--ts-row-bg)", border: "1px solid var(--ts-row-border)", borderRadius: "var(--ts-radius-sm)" },
   avatar: { width: 56, height: 56, borderRadius: "50%", objectFit: "cover", flexShrink: 0 },
-  initials: { background: "#FBEDE7", color: "#C65A3A", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18 },
+  initials: { background: "var(--ts-accent-soft)", color: "var(--ts-accent)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18 },
   info: { display: "flex", flexDirection: "column", gap: 3, minWidth: 0 },
-  name: { color: "#191B26", fontWeight: 600, fontSize: 15 },
-  profession: { color: "#34343E", fontSize: 13 },
-  details: { color: "#686875", fontSize: 12, display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" },
+  name: { color: "var(--ts-text)", fontWeight: 600, fontSize: 15 },
+  profession: { color: "var(--ts-text)", fontSize: 13 },
+  details: { color: "var(--ts-muted)", fontSize: 12, display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" },
   pin: { marginLeft: 1 },
   links: { display: "flex", gap: 14, marginTop: 4 },
-  link: { color: "#C65A3A", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" },
-  button: { width: "100%", height: 48, border: "1px solid #E8E5E7", borderRadius: 12, background: "white", color: "#686875", fontSize: 14, cursor: "pointer", marginTop: 24 },
-  error: { color: "#A33E2D", fontSize: 14, textAlign: "center" },
+  link: { color: "var(--ts-accent)", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" },
+  button: { width: "100%", height: 48, border: "1px solid var(--ts-input-border)", borderRadius: "var(--ts-radius-sm)", background: "transparent", color: "var(--ts-muted)", fontSize: 14, cursor: "pointer", marginTop: 24 },
+  error: { color: "var(--ts-danger)", fontSize: 14, textAlign: "center" },
 };

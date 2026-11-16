@@ -1,4 +1,4 @@
--- Tech Social: database update for profile details + photos
+-- Technically Social: database update for profile details + photos
 -- Written by Himal Shrestha
 --
 -- Adds first/last name, 18+, sex, location and photo to each person's profile,

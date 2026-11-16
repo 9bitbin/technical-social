@@ -1,7 +1,7 @@
 "use client";
 
 /*
- * Tech Social: sign-up page (/register)
+ * Technically Social: sign-up page (/register)
  * Written by Himal Shrestha
  *
  * New attendees land here after typing an email that isn't in the database yet.
@@ -16,6 +16,7 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiCamera, FiUser } from "react-icons/fi";
 import { postAttendance, type AttendanceResult } from "@/lib/attendance-api";
+import ThemeDecor from "@/app/theme-decor";
 
 // ==================================================================
 // PHOTO SHRINKER
@@ -122,6 +123,8 @@ export default function RegisterPage() {
         <button type="button" onClick={() => router.push("/")} style={styles.back}>
           <FiArrowLeft size={16} /> Back
         </button>
+        <div style={{ height: 16 }} />
+        <ThemeDecor label="Attendee intake" />
 
         <h1 style={styles.title}>Create your profile</h1>
         <p style={styles.intro}>Add a few details so other attendees can connect with you.</p>
@@ -211,22 +214,22 @@ export default function RegisterPage() {
 // All the looks for this page live down here, so the layout above stays readable.
 const styles: Record<string, React.CSSProperties> = {
   page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, boxSizing: "border-box", fontFamily: "var(--font-geist-sans), sans-serif" },
-  card: { width: "100%", maxWidth: 480, background: "#fff", padding: 32, borderRadius: 20, border: "1px solid #F0EAE7", boxShadow: "0 12px 40px rgba(80,45,30,.06)", boxSizing: "border-box" },
-  back: { display: "inline-flex", alignItems: "center", gap: 7, border: 0, background: "transparent", color: "#686875", padding: 0, cursor: "pointer" },
-  title: { fontSize: 28, fontWeight: 700, color: "#191B26", margin: "20px 0 8px", letterSpacing: -1, textAlign: "center" },
-  intro: { fontSize: 14, lineHeight: 1.55, color: "#686875", margin: "0 0 22px", textAlign: "center" },
+  card: { width: "100%", maxWidth: 480, background: "var(--ts-card)", padding: 32, borderRadius: "var(--ts-radius)", border: "1px solid var(--ts-card-border)", boxShadow: "var(--ts-card-shadow)", boxSizing: "border-box" },
+  back: { display: "inline-flex", alignItems: "center", gap: 7, border: 0, background: "transparent", color: "var(--ts-muted)", padding: 0, cursor: "pointer" },
+  title: { fontSize: 28, fontWeight: 700, color: "var(--ts-text)", margin: "0 0 8px", letterSpacing: "var(--ts-title-spacing)", fontFamily: "var(--ts-font-display)", textAlign: "center" },
+  intro: { fontSize: 14, lineHeight: 1.55, color: "var(--ts-muted)", margin: "0 0 22px", textAlign: "center" },
   form: { display: "grid", gap: 14 },
   row: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
-  label: { display: "grid", gridTemplateColumns: "1fr auto", gap: "7px 8px", color: "#34343E", fontSize: 13, fontWeight: 600, minWidth: 0 },
-  required: { color: "#C65A3A", fontSize: 11, fontWeight: 500 },
-  optional: { color: "#92919A", fontSize: 11, fontWeight: 500 },
-  input: { gridColumn: "1 / -1", width: "100%", height: 46, padding: "0 13px", border: "1px solid #E8E5E7", borderRadius: 10, background: "#fff", color: "#191B26", font: "inherit", boxSizing: "border-box" },
-  note: { fontSize: 12, color: "#686875", margin: "6px 0 -4px", lineHeight: 1.5 },
+  label: { display: "grid", gridTemplateColumns: "1fr auto", gap: "7px 8px", color: "var(--ts-text)", fontSize: 13, fontWeight: 600, minWidth: 0 },
+  required: { color: "var(--ts-accent)", fontSize: 11, fontWeight: 500 },
+  optional: { color: "var(--ts-faint)", fontSize: 11, fontWeight: 500 },
+  input: { gridColumn: "1 / -1", width: "100%", height: 46, padding: "0 13px", border: "1px solid var(--ts-input-border)", borderRadius: "var(--ts-radius-sm)", background: "var(--ts-input-bg)", color: "var(--ts-text)", font: "inherit", fontWeight: 400, boxSizing: "border-box" },
+  note: { fontSize: 12, color: "var(--ts-muted)", margin: "6px 0 -4px", lineHeight: 1.5 },
   photoPicker: { display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: "pointer", marginBottom: 4 },
-  photoCircle: { position: "relative", width: 96, height: 96, borderRadius: "50%", background: "#FBEDE7", color: "#C65A3A", display: "flex", alignItems: "center", justifyContent: "center" },
+  photoCircle: { position: "relative", width: 96, height: 96, borderRadius: "50%", background: "var(--ts-accent-soft)", color: "var(--ts-accent)", display: "flex", alignItems: "center", justifyContent: "center" },
   photoImage: { width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" },
-  cameraBadge: { position: "absolute", right: 0, bottom: 2, width: 30, height: 30, borderRadius: "50%", background: "#C65A3A", color: "#fff", border: "3px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" },
-  photoText: { fontSize: 13, fontWeight: 600, color: "#34343E", display: "flex", gap: 6, alignItems: "center" },
-  error: { color: "#A33E2D", fontSize: 13, margin: 0 },
-  submit: { height: 52, border: 0, borderRadius: 12, background: "#C65A3A", color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer", marginTop: 4 },
+  cameraBadge: { position: "absolute", right: 0, bottom: 2, width: 30, height: 30, borderRadius: "50%", background: "var(--ts-accent)", color: "var(--ts-on-accent)", border: "3px solid var(--ts-card)", display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" },
+  photoText: { fontSize: 13, fontWeight: 600, color: "var(--ts-text)", display: "flex", gap: 6, alignItems: "center" },
+  error: { color: "var(--ts-danger)", fontSize: 13, margin: 0 },
+  submit: { height: 52, border: 0, borderRadius: "var(--ts-radius-sm)", background: "var(--ts-accent)", color: "var(--ts-on-accent)", fontSize: 15, fontWeight: 600, cursor: "pointer", marginTop: 4 },
 };
